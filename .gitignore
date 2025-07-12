@@ -6,4 +6,5 @@ tests/__pycache__/
 logs
 .coverage
 data/teste_bees
-config/airflow.cfg
+config
+home
