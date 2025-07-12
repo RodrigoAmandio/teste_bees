@@ -29,7 +29,7 @@ down:
 	@echo "🛑 Stopping Airflow containers..."
 	@docker compose down --volumes --remove-orphans
 
-#Give permissions to folders
+#Give permissions to folders and create them if they do not exist
 permissions:
 	@echo "Creating initial folders"
 	@mkdir -p dags/src dags/utils logs plugins config data teste
