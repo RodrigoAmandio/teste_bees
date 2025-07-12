@@ -32,7 +32,7 @@ down:
 #Give permissions to folders and create them if they do not exist
 permissions:
 	@echo "Creating initial folders"
-	@mkdir -p dags/src dags/utils logs plugins config data teste
+	@mkdir -p dags/src dags/utils logs plugins config data
 	@echo "Setting permissions to folders"
 	@sudo chown -R $$(id -u):$$(id -g) dags logs plugins config #It gives permissions to the folders
 
