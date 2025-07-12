@@ -31,6 +31,8 @@ down:
 
 #Give permissions to folders
 permissions:
+	@echo "Creating initial folders"
+	@mkdir -p dags/src dags/utils logs plugins config data teste
 	@echo "Setting permissions to folders"
 	@sudo chown -R $$(id -u):$$(id -g) dags logs plugins config #It gives permissions to the folders
 
