@@ -1,7 +1,9 @@
 .venv
 dags/__pycache__/
+dags/src/__pycache__/
 dags/utils/__pycache__/
 tests/__pycache__/
 logs
 .coverage
 data/teste_bees
+config/airflow.cfg
