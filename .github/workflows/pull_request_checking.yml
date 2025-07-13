@@ -73,29 +73,60 @@ jobs:
   # Job to verify commit messages against a predefined pattern
   check-commit-pattern:
     runs-on: ubuntu-latest
-    needs: check-branch-name # This job will only run if 'check-branch-name' succeeds
+    needs: check-branch-name
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Essential to get full history for git log
+
       - name: Verify Commit Messages Format
         run: |
-          echo "Checking commit messages for the current push..."
+          echo "Checking commit messages for the current event..."
 
-          # Example: "feat: Add user authentication" or "fix: Resolve critical bug"
+          # Determine the commit messages to check based on the event type
+          COMMIT_MESSAGES=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          # This covers all commits introduced by the PR branch
+            PR_BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            PR_HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            
+            echo "Getting commits for Pull Request from $PR_BASE_SHA to $PR_HEAD_SHA"
+            COMMIT_MESSAGES=$(git log --format=%B $PR_BASE_SHA..$PR_HEAD_SHA)
+          
+            else
+            # For push events, use the push range
+            PUSH_BEFORE_SHA="${{ github.event.before }}"
+            PUSH_AFTER_SHA="${{ github.sha }}"
+            
+            if [ "$PUSH_BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+              # Initial push to a branch
+              echo "Getting all commits for initial Push up to $PUSH_AFTER_SHA"
+              COMMIT_MESSAGES=$(git log --format=%B $PUSH_AFTER_SHA)
+            
+              else
+              # Subsequent push to a branch
+              echo "Getting commits for Push from $PUSH_BEFORE_SHA to $PUSH_AFTER_SHA"
+              COMMIT_MESSAGES=$(git log --format=%B $PUSH_BEFORE_SHA..$PUSH_AFTER_SHA)
+            fi
+          fi
+
+          # This regex will now ONLY be applied to non-merge commits.
           COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .+"
 
-          # Get the list of commit messages from the GitHub event payload.
-          # We use 'jq' to parse the JSON array of commits and extract each message.
-          # The -r option outputs raw strings, not JSON strings.
-          # The '|| true' prevents the step from failing if jq is not found or has no output.
-          COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message | split("\n")[0]' || true)
-
           NON_CONFORMING_COMMITS=""
-          # Read each line (commit message) and check against the pattern
+          # Use 'awk' to get the first line of each commit message and filter out empty lines.
+          # This is more robust for multi-line messages and blank lines from git log output.
+          FILTERED_COMMIT_MESSAGES=$(echo "$COMMIT_MESSAGES" | awk 'BEGIN {RS="\n\n"} {print $1}' | grep -v '^$')
+
+          # Read each filtered commit message line and check against the pattern
           while IFS= read -r line; do
-            # Skip empty lines that might result from jq output or multi-line commit messages
+            # Skip empty lines that might result from awk/grep output
             if [[ -z "$line" ]]; then
               continue
             fi
 
+            # Ignore commit messages that start with "Merge"
             if [[ "$line" =~ ^Merge ]]; then
               echo "Ignoring merge commit message: '$line'"
               continue
@@ -105,13 +136,12 @@ jobs:
             if [[ ! "$line" =~ $COMMIT_PATTERN ]]; then
               NON_CONFORMING_COMMITS+="$line\n"
             fi
-
-          done <<< "$COMMIT_MESSAGES"
+          done <<< "$FILTERED_COMMIT_MESSAGES"
 
           if [[ -n "$NON_CONFORMING_COMMITS" ]]; then
             echo "Error: One or more commit messages do not follow the required pattern."
-            echo "Please ensure all commit messages adhere to a standard format (e.g., Conventional Commits)."
-            echo "Example allowed patterns:"
+            echo "Please ensure all non-merge commit messages adhere to a standard format (e.g., Conventional Commits)."
+            echo "Example allowed patterns for non-merge commits:"
             echo "  feat: Your new feature description"
             echo "  fix: Your bug fix description"
             echo "  docs: Your documentation update"
@@ -123,8 +153,8 @@ jobs:
             echo "  perf: Performance improvements"
             echo "  revert: Revert a previous commit"
             echo ""
-            echo "Commit messages found in this push that do NOT conform:"
-            echo -e "$NON_CONFORMING_COMMITS" # -e to interpret newlines
+            echo "Commit messages found in this push that do NOT conform (excluding merge commits):"
+            echo -e "$NON_CONFORMING_COMMITS"
             
             # Outputs a tutorial about how to rebase the wrong commits
             echo "Run git rebase -i HEAD~N in your terminal. N is the number of commits to retrieve"
