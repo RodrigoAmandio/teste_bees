@@ -55,7 +55,7 @@ jobs:
           fi
 
           # This regex now only allows branch names that start with 'feature/'.
-          if [[ ! "$BRANCH_TO_CHECK" =~ ^refs/heads/(main|develop|feature\/.*)$ ]]; then
+          if [[ ! "$BRANCH_TO_CHECK" =~ ^(main|develop|feature\/.*)$ ]]; then
             echo "Error: Branch name '$BRANCH_TO_CHECK' does not follow the required pattern."
             echo "Please ensure your branch name starts with 'feature/', main or develop (e.g., feature/add-new-feature)."
             
