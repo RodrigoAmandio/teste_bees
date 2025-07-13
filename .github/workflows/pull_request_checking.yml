@@ -73,55 +73,24 @@ jobs:
   # Job to verify commit messages against a predefined pattern
   check-commit-pattern:
     runs-on: ubuntu-latest
-    needs: check-branch-name
+    needs: check-branch-name # This job will only run if 'check-branch-name' succeeds
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Essential to get full history for git log
-
       - name: Verify Commit Messages Format
         run: |
           echo "Checking commit messages for the current event..."
 
-          # Determine the commit messages to check based on the event type
-          COMMIT_MESSAGES=""
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          # This covers all commits introduced by the PR branch
-            PR_BASE_SHA="${{ github.event.pull_request.base.sha }}"
-            PR_HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-            
-            echo "Getting commits for Pull Request from $PR_BASE_SHA to $PR_HEAD_SHA"
-            COMMIT_MESSAGES=$(git log --format=%B $PR_BASE_SHA..$PR_HEAD_SHA)
-          
-            else
-            # For push events, use the push range
-            PUSH_BEFORE_SHA="${{ github.event.before }}"
-            PUSH_AFTER_SHA="${{ github.sha }}"
-            
-            if [ "$PUSH_BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
-              # Initial push to a branch
-              echo "Getting all commits for initial Push up to $PUSH_AFTER_SHA"
-              COMMIT_MESSAGES=$(git log --format=%B $PUSH_AFTER_SHA)
-            
-              else
-              # Subsequent push to a branch
-              echo "Getting commits for Push from $PUSH_BEFORE_SHA to $PUSH_AFTER_SHA"
-              COMMIT_MESSAGES=$(git log --format=%B $PUSH_BEFORE_SHA..$PUSH_AFTER_SHA)
-            fi
-          fi
-
-          # This regex will now ONLY be applied to non-merge commits.
+          # It allows for messages like "feat: description", "feat: " (with a space), or "feat:" (without a space).
           COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .*$"
 
-          NON_CONFORMING_COMMITS=""
-          # Use 'awk' to get the first line of each commit message and filter out empty lines.
-          # This is more robust for multi-line messages and blank lines from git log output.
-          FILTERED_COMMIT_MESSAGES=$(echo "$COMMIT_MESSAGES" | awk 'BEGIN {RS="\n\n"} {print $1}' | grep -v '^$')
+          # We use 'jq' to parse the JSON array of commits and extract ONLY THE FIRST LINE of each message.
+          # The -r option outputs raw strings, not JSON strings.
+          # The '|| true' prevents the step from failing if jq is not found or has no output.
+          COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message | split("\n")[0]' || true)
 
-          # Read each filtered commit message line and check against the pattern
+          NON_CONFORMING_COMMITS=""
+          # Read each line (commit message subject) and check against the pattern
           while IFS= read -r line; do
-            # Skip empty lines that might result from awk/grep output
+            # Skip empty lines that might result from jq output
             if [[ -z "$line" ]]; then
               continue
             fi
@@ -136,22 +105,22 @@ jobs:
             if [[ ! "$line" =~ $COMMIT_PATTERN ]]; then
               NON_CONFORMING_COMMITS+="$line\n"
             fi
-          done <<< "$FILTERED_COMMIT_MESSAGES"
+          done <<< "$COMMIT_MESSAGES"
 
           if [[ -n "$NON_CONFORMING_COMMITS" ]]; then
             echo "Error: One or more commit messages do not follow the required pattern."
             echo "Please ensure all non-merge commit messages adhere to a standard format (e.g., Conventional Commits)."
             echo "Example allowed patterns for non-merge commits:"
-            echo "  feat: Your new feature description"
-            echo "  fix: Your bug fix description"
-            echo "  docs: Your documentation update"
-            echo "  chore: Routine maintenance task"
-            echo "  refactor: Code refactoring"
-            echo "  test: New test case"
-            echo "  build: Build system system changes"
-            echo "  ci: CI configuration changes"
-            echo "  perf: Performance improvements"
-            echo "  revert: Revert a previous commit"
+            echo "  feat: Your new feature description (or just 'feat:')"
+            echo "  fix: Your bug fix description (or just 'fix:')"
+            echo "  docs: Your documentation update (or just 'docs:')"
+            echo "  chore: Routine maintenance task (or just 'chore:')"
+            echo "  refactor: Code refactoring (or just 'refactor:')"
+            echo "  test: New test case (or just 'test:')"
+            echo "  build: Build system system changes (or just 'build:')"
+            echo "  ci: CI configuration changes (or just 'ci:')"
+            echo "  perf: Performance improvements (or just 'perf:')"
+            echo "  revert: Revert a previous commit (or just 'revert:')"
             echo ""
             echo "Commit messages found in this push that do NOT conform (excluding merge commits):"
             echo -e "$NON_CONFORMING_COMMITS"
