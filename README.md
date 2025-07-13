@@ -171,7 +171,7 @@ make down
 
 **Note**: These are default values, and you can modify them directly in the Airflow UI before executing the pipeline. This allows flexibility to run the pipeline for different input/output targets as needed.
 
-- **Monitoring / Logging**: All Python scripts include structured logging for observability in Airflow logs. Messages that start with "Observability" can be mapped and then integrated with visualization tools like Datadog or Grafana. These tools can directly connect to cloud logging services such as Amazon CloudWatch.
+- **Monitoring / Logging**: All Python scripts include structured logging for observability in Airflow logs to prevent silent failures. Messages that start with "Observability" can be mapped, like the following:
 
 ```json
 {
@@ -180,6 +180,8 @@ make down
     "StatusCode": 404
 }
 ```
+
+In a production environment, we could route Airflow logs (or structured logs with keywords like "Observability") to centralized monitoring solutions like CloudWatch (AWS), Stackdriver (GCP), or Datadog. Alerts could be configured based on log patterns, failed DAG runs, or data quality anomalies.
 
 - **Testing**: Modular design allows each Python function to be tested in isolation.
 
@@ -215,6 +217,9 @@ These conventions are enforced in CI using GitHub Actions, ensuring code hygiene
 It also checks for code formatting and unit tests, the same used with make format and make unit_tests commands.
 
 If the tests fail, a pull request will not be able to be merged.
+
+## Clarification
+Add empty ```__init__.py``` files to each module (src/, tests/, utils/) to ensure they are importable as packages in both Airflow and local dev environments.
 
 ## Author
 - Rodrigo Amandio
