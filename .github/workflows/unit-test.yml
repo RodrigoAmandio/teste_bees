@@ -46,6 +46,10 @@ jobs:
           if [[ ! "$BRANCH_NAME" =~ ^refs/heads/feature\/.*$ ]]; then
             echo "Error: Branch name '$BRANCH_NAME' does not follow the required pattern."
             echo "Please ensure your branch name starts with 'feature/' (e.g., feature/add-new-feature)."
+            echo "Rename your local branch: git branch -m <old-branch-name> <new-branch-name>"
+            echo "Delete the old branch on the remote: git push origin --delete <old-branch-name>"
+            echo "Push your new branch to the remote: git push -u origin <new-branch-name>"
+            
             exit 1 # Fails the job if the pattern doesn't match
           else
             echo "Branch name '$BRANCH_NAME' follows the required pattern."
