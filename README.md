@@ -158,11 +158,18 @@ make down
 - **Retries & Resilience**: Python scripts include try/except handling. Airflow DAGs can be configured with retries if needed (see retries, retry_delay).
 
 - **Parametrized DAG**: DAG parameters are passed via params={} and injected into BashOperator scripts via Jinja ({{ params.xyz }}). The required parameters are:
-    - **raw_final_path**  
-    - **raw_file_name**
-    - **url_api**
-    - **silver_path**
-    - **gold_path**
+
+```json
+{
+  "url_api": "https://api.openbrewerydb.org/v1/breweries",
+  "raw_final_path": "/opt/airflow/data/teste_bees/raw_data/",
+  "raw_file_name": "teste_bees_rodrigo_amandio",
+  "silver_path": "/opt/airflow/data/teste_bees/silver_data/",
+  "gold_path": "/opt/airflow/data/teste_bees/gold_data/"
+}
+```
+
+**Note**: These are default values, and you can modify them directly in the Airflow UI before executing the pipeline. This allows flexibility to run the pipeline for different input/output targets as needed.
 
 - **Monitoring / Logging**: All Python scripts include structured logging for observability in Airflow logs. Messages that start with "Observability" can be mapped and then integrated with visualization tools like Datadog or Grafana. These tools can directly connect to cloud logging services such as Amazon CloudWatch.
 
