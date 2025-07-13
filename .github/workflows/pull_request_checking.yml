@@ -63,6 +63,7 @@ jobs:
             echo "Rename your local branch: git branch -m <old-branch-name> <new-branch-name>"
             echo "Delete the old branch on the remote: git push origin --delete <old-branch-name>"
             echo "Push your new branch to the remote: git push -u origin <new-branch-name>"
+            echo "Reopen your pull request with the renamed branch as the source"
             
             exit 1 # Fails the job if the pattern doesn't match
           
