@@ -43,9 +43,11 @@ jobs:
           echo "Checking branch name: $BRANCH_NAME"
 
           # This regex now only allows branch names that start with 'feature/'.
-          if [[ ! "$BRANCH_NAME" =~ ^refs/heads/feature\/.*$ ]]; then
+          if [[ ! "$BRANCH_NAME" =~ ^refs/heads/(main|develop|feature\/.*)$ ]]; then
             echo "Error: Branch name '$BRANCH_NAME' does not follow the required pattern."
-            echo "Please ensure your branch name starts with 'feature/' (e.g., feature/add-new-feature)."
+            echo "Please ensure your branch name starts with 'feature/', main or develop (e.g., feature/add-new-feature)."
+            
+            # Outputs a tutorial about how to rename the branch
             echo "Rename your local branch: git branch -m <old-branch-name> <new-branch-name>"
             echo "Delete the old branch on the remote: git push origin --delete <old-branch-name>"
             echo "Push your new branch to the remote: git push -u origin <new-branch-name>"
@@ -104,6 +106,8 @@ jobs:
             echo ""
             echo "Commit messages found in this push that do NOT conform:"
             echo -e "$NON_CONFORMING_COMMITS" # -e to interpret newlines
+            
+            # Outputs a tutorial about how to rebase the wrong commits
             echo "Run git rebase -i HEAD~N in your terminal. N is the number of commits to retrieve"
             echo "Change the word pick to reword (or r) next to the commit(s) whose message you want to change. Save and close the editor"
             echo "Run git push --force-with-lease origin <your-branch-name> in your terminal"
