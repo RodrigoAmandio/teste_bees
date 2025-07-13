@@ -1,6 +1,5 @@
 black
 isort
-mypy
 coverage
 pandas
 requests
