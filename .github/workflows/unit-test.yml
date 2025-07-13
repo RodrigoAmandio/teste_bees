@@ -32,6 +32,7 @@ jobs:
           make check
   
   check-branch-name:
+    needs: check-formatting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -71,7 +72,14 @@ jobs:
           # Get all commit messages for the current push.
           # ${{ github.event.before }} is the commit before the push
           # ${{ github.sha }} is the last commit of the push
-          COMMIT_MESSAGES=$(git log --format=%B ${{ github.event.before }}..${{ github.sha }})
+          # If github.event.before is the "zero" SHA (initial push), check all commits up to github.sha.
+          # Otherwise, check commits from github.event.before to github.sha.
+          
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            COMMIT_MESSAGES=$(git log --format=%B ${{ github.sha }})
+          else
+            COMMIT_MESSAGES=$(git log --format=%B ${{ github.event.before }}..${{ github.sha }})
+          fi
 
           # Define your desired commit pattern (e.g., Conventional Commits).
           # This regex enforces a type (feat, fix, docs, etc.) followed by a colon and a space, then a message.
