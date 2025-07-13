@@ -40,10 +40,19 @@ jobs:
 
       - name: Verify Branch Name Format
         run: |
-          # Get the current branch name from the GitHub context
-          # Branch refs in github.ref always start with refs/heads/
-          BRANCH_NAME="${{ github.ref }}"
-          echo "Checking branch name: $BRANCH_NAME"
+          # Determine the branch name to check based on the event type
+          BRANCH_TO_CHECK=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            
+          # For pull_request events, github.head_ref contains the actual source branch name
+            BRANCH_TO_CHECK="${{ github.head_ref }}"
+            echo "Checking branch name for Pull Request: $BRANCH_TO_CHECK"
+          
+            else
+            # For push events, github.ref contains 'refs/heads/branch-name', so extract the branch name
+            BRANCH_TO_CHECK=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+            echo "Checking branch name for Push: $BRANCH_TO_CHECK"
+          fi
 
           # This regex now only allows branch names that start with 'feature/'.
           if [[ ! "$BRANCH_NAME" =~ ^refs/heads/(main|develop|feature\/.*)$ ]]; then
