@@ -68,7 +68,7 @@ jobs:
           echo "Checking commit messages for the current push..."
 
           # Example: "feat: Add user authentication" or "fix: Resolve critical bug"
-          COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .+|Merge pull request #\\d+ from .+\/.+$"
+          COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .+|Merge pull request #\\d+ from .+/.+$"
 
           # Get the list of commit messages from the GitHub event payload.
           # We use 'jq' to parse the JSON array of commits and extract each message.
