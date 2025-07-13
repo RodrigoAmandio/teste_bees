@@ -112,7 +112,7 @@ jobs:
           fi
 
           # This regex will now ONLY be applied to non-merge commits.
-          COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .+"
+          COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .*$"
 
           NON_CONFORMING_COMMITS=""
           # Use 'awk' to get the first line of each commit message and filter out empty lines.
