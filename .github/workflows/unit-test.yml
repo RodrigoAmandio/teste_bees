@@ -57,39 +57,33 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-branch-name # This job will only run if 'check-branch-name' succeeds
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Important: Fetch full history to get all commit messages for the push
-
       - name: Verify Commit Messages Format
         run: |
           echo "Checking commit messages for the current push..."
 
-          # Get all commit messages for the current push.
-          # ${{ github.event.before }} is the commit before the push
-          # ${{ github.sha }} is the last commit of the push
-          # If github.event.before is the "zero" SHA (initial push), check all commits up to github.sha.
-          # Otherwise, check commits from github.event.before to github.sha.
-          
-          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            COMMIT_MESSAGES=$(git log --format=%B ${{ github.sha }})
-          else
-            COMMIT_MESSAGES=$(git log --format=%B ${{ github.event.before }}..${{ github.sha }})
-          fi
-
-          # Define your desired commit pattern (e.g., Conventional Commits).
-          # This regex enforces a type (feat, fix, docs, etc.) followed by a colon and a space, then a message.
           # Example: "feat: Add user authentication" or "fix: Resolve critical bug"
           COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .+"
 
-          # Use grep to find any commit messages that DO NOT match the pattern.
-          # -v '^$': removes empty lines
-          # -q: quiet, suppresses output
-          # -E: extended regex
-          # -v: invert match (select non-matching lines)
+          # Get the list of commit messages from the GitHub event payload.
+          # We use 'jq' to parse the JSON array of commits and extract each message.
+          # The -r option outputs raw strings, not JSON strings.
+          # The '|| true' prevents the step from failing if jq is not found or has no output.
+          COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message' || true)
 
-          if echo "$COMMIT_MESSAGES" | grep -v '^$' | grep -qEv "$COMMIT_PATTERN"; then
+          NON_CONFORMING_COMMITS=""
+          # Read each line (commit message) and check against the pattern
+          while IFS= read -r line; do
+            # Skip empty lines that might result from jq output or multi-line commit messages
+            if [[ -z "$line" ]]; then
+              continue
+            fi
+            # Check if the commit message line does NOT match the pattern
+            if [[ ! "$line" =~ $COMMIT_PATTERN ]]; then
+              NON_CONFORMING_COMMITS+="$line\n"
+            fi
+          done <<< "$COMMIT_MESSAGES"
+
+          if [[ -n "$NON_CONFORMING_COMMITS" ]]; then
             echo "Error: One or more commit messages do not follow the required pattern."
             echo "Please ensure all commit messages adhere to a standard format (e.g., Conventional Commits)."
             echo "Example allowed patterns:"
@@ -99,13 +93,13 @@ jobs:
             echo "  chore: Routine maintenance task"
             echo "  refactor: Code refactoring"
             echo "  test: New test case"
-            echo "  build: Build system changes"
+            echo "  build: Build system system changes"
             echo "  ci: CI configuration changes"
             echo "  perf: Performance improvements"
             echo "  revert: Revert a previous commit"
             echo ""
-            echo "Commit messages found in this push:"
-            echo "$COMMIT_MESSAGES" # Output all commit messages for debugging
+            echo "Commit messages found in this push that do NOT conform:"
+            echo -e "$NON_CONFORMING_COMMITS" # -e to interpret newlines
             echo "Run git rebase -i HEAD~N in your terminal. N is the number of commits to retrieve"
             echo "Change the word pick to reword (or r) next to the commit(s) whose message you want to change. Save and close the editor"
             echo "Run git push --force-with-lease origin <your-branch-name> in your terminal"
