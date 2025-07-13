@@ -1,10 +1,7 @@
 name: Unit test
 
 on: 
-  push:
-    paths:
-      - 'dags/**'
-      - 'tests/**'
+  push:     
 
 jobs: 
   check-formatting:
