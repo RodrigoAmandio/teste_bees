@@ -18,14 +18,13 @@ from dags.src.transformation import data_transformation, json_to_dataframe
 class TestGetAPIData(unittest.TestCase):
 
     def setUp(self):
-        # Sample DataFrame
+        # It serves as mock for some of the unit tests
         self.df = pd.DataFrame([{"id": 1, "name": "Test Brewery"}])
         self.test_path = "fake_path/file.parquet"
         self.logger = MagicMock()
 
     @patch("dags.src.extract_data.requests.get")
     def test_get_api_data_success(self, mock_get):
-        # Setup
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = [{"id": 1, "name": "Brewery A"}]
