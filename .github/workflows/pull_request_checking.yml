@@ -1,7 +1,10 @@
 name: Unit test
 
 on: 
-  push:     
+  pull_request:
+    types:
+      - opened
+      - synchronize  
 
 jobs: 
   check-formatting:
@@ -93,7 +96,7 @@ jobs:
             if [[ ! "$line" =~ $COMMIT_PATTERN ]]; then
               NON_CONFORMING_COMMITS+="$line\n"
             fi
-            
+
           done <<< "$COMMIT_MESSAGES"
 
           if [[ -n "$NON_CONFORMING_COMMITS" ]]; then
