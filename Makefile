@@ -64,3 +64,10 @@ format:
 	@echo "[INFO] Running isort..."
 	@isort ./dags/src
 
+check:
+	@echo "[INFO] Checking all python files..."
+	@echo "[INFO] Running black..."
+	@black -q --check ./dags/src 
+	@echo "[INFO] Running isort..."
+	@isort -q --check ./dags/src
+
