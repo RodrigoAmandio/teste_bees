@@ -65,6 +65,7 @@ jobs:
             echo "Push your new branch to the remote: git push -u origin <new-branch-name>"
             
             exit 1 # Fails the job if the pattern doesn't match
+          
           else
             echo "Branch name '$BRANCH_TO_CHECK' follows the required pattern."
           fi
@@ -84,11 +85,10 @@ jobs:
           echo "Checking commit messages for the current event..."
 
           # Determine the commit messages to check based on the event type
-          COMMIT_SUBJECTS="" # Changed to COMMIT_SUBJECTS as we'll get only subjects
+          COMMIT_SUBJECTS=""
           
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # For pull_request events, get commits between base and head of the PR
-            # This covers all commits introduced by the PR branch
             PR_BASE_SHA="${{ github.event.pull_request.base.sha }}"
             PR_HEAD_SHA="${{ github.event.pull_request.head.sha }}"
             
@@ -101,22 +101,25 @@ jobs:
             # For push events, use the push range
             PUSH_BEFORE_SHA="${{ github.event.before }}"
             PUSH_AFTER_SHA="${{ github.sha }}"
+            
             if [ "$PUSH_BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
               # Initial push to a branch
               echo "Getting all commits for initial Push up to $PUSH_AFTER_SHA"
               COMMIT_SUBJECTS=$(git log --format=%s "$PUSH_AFTER_SHA")
-            else
+            
+              else
               # Subsequent push to a branch
               echo "Getting commits for Push from $PUSH_BEFORE_SHA to $PUSH_AFTER_SHA"
               COMMIT_SUBJECTS=$(git log --format=%s "$PUSH_BEFORE_SHA".."$PUSH_AFTER_SHA")
             fi
           fi
 
-          # It allows for messages like "feat: description", "feat: " (with a space)" (without a space).
+          # It allows for messages like "feat: " (with a space).
           COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): ?.*$"
 
           NON_CONFORMING_COMMITS=""
           # Read each commit subject line and check against the pattern
+          
           while IFS= read -r line; do
             # Skip empty lines that might result from git log output
             if [[ -z "$line" ]]; then
@@ -139,16 +142,16 @@ jobs:
             echo "Error: One or more commit messages do not follow the required pattern."
             echo "Please ensure all non-merge commit messages adhere to a standard format (e.g., Conventional Commits)."
             echo "Example allowed patterns for non-merge commits:"
-            echo "  feat: Your new feature description (or just 'feat:')"
-            echo "  fix: Your bug fix description (or just 'fix:')"
-            echo "  docs: Your documentation update (or just 'docs:')"
-            echo "  chore: Routine maintenance task (or just 'chore:')"
-            echo "  refactor: Code refactoring (or just 'refactor:')"
-            echo "  test: New test case (or just 'test:')"
-            echo "  build: Build system system changes (or just 'build:')"
-            echo "  ci: CI configuration changes (or just 'ci:')"
-            echo "  perf: Performance improvements (or just 'perf:')"
-            echo "  revert: Revert a previous commit (or just 'revert:')"
+            echo "  feat: Your new feature description"
+            echo "  fix: Your bug fix description"
+            echo "  docs: Your documentation update"
+            echo "  chore: Routine maintenance task"
+            echo "  refactor: Code refactoring"
+            echo "  test: New test case"
+            echo "  build: Build system changes"
+            echo "  ci: CI configuration changes"
+            echo "  perf: Performance improvements"
+            echo "  revert: Revert a previous commit"
             echo ""
             echo "Commit messages found in this push that do NOT conform (excluding merge commits):"
             echo -e "$NON_CONFORMING_COMMITS"
@@ -158,6 +161,7 @@ jobs:
             echo "Change the word pick to reword (or r) next to the commit(s) whose message you want to change. Save and close the editor"
             echo "Run git push --force-with-lease origin <your-branch-name> in your terminal"
             exit 1 # Fails the job if any commit message doesn't match
+          
           else
             echo "All commit messages follow the required pattern."
           fi
