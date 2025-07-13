@@ -25,7 +25,6 @@ class TestGetAPIData(unittest.TestCase):
 
     @patch("dags.src.extract_data.requests.get")
     def test_get_api_data_success(self, mock_get):
-        # Setup
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = [{"id": 1, "name": "Brewery A"}]
