@@ -1,7 +1,10 @@
 name: Unit test
 
 on: 
-  push:     
+  pull_request:
+    types:
+      - opened
+      - synchronize  
 
 jobs: 
   check-formatting:
@@ -37,14 +40,23 @@ jobs:
 
       - name: Verify Branch Name Format
         run: |
-          # Get the current branch name from the GitHub context
-          # Branch refs in github.ref always start with refs/heads/
-          BRANCH_NAME="${{ github.ref }}"
-          echo "Checking branch name: $BRANCH_NAME"
+          # Determine the branch name to check based on the event type
+          BRANCH_TO_CHECK=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            
+          # For pull_request events, github.head_ref contains the actual source branch name
+            BRANCH_TO_CHECK="${{ github.head_ref }}"
+            echo "Checking branch name for Pull Request: $BRANCH_TO_CHECK"
+          
+            else
+            # For push events, github.ref contains 'refs/heads/branch-name', so extract the branch name
+            BRANCH_TO_CHECK=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+            echo "Checking branch name for Push: $BRANCH_TO_CHECK"
+          fi
 
           # This regex now only allows branch names that start with 'feature/'.
-          if [[ ! "$BRANCH_NAME" =~ ^refs/heads/(main|develop|feature\/.*)$ ]]; then
-            echo "Error: Branch name '$BRANCH_NAME' does not follow the required pattern."
+          if [[ ! "$BRANCH_TO_CHECK" =~ ^(main|develop|feature\/.*)$ ]]; then
+            echo "Error: Branch name '$BRANCH_TO_CHECK' does not follow the required pattern."
             echo "Please ensure your branch name starts with 'feature/', main or develop (e.g., feature/add-new-feature)."
             
             # Outputs a tutorial about how to rename the branch
@@ -54,7 +66,7 @@ jobs:
             
             exit 1 # Fails the job if the pattern doesn't match
           else
-            echo "Branch name '$BRANCH_NAME' follows the required pattern."
+            echo "Branch name '$BRANCH_TO_CHECK' follows the required pattern."
           fi
         shell: bash
 
@@ -93,7 +105,7 @@ jobs:
             if [[ ! "$line" =~ $COMMIT_PATTERN ]]; then
               NON_CONFORMING_COMMITS+="$line\n"
             fi
-            
+
           done <<< "$COMMIT_MESSAGES"
 
           if [[ -n "$NON_CONFORMING_COMMITS" ]]; then
