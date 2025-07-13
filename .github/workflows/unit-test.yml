@@ -107,6 +107,9 @@ jobs:
             echo ""
             echo "Commit messages found in this push:"
             echo "$COMMIT_MESSAGES" # Output all commit messages for debugging
+            echo "Run git rebase -i HEAD~N in your terminal. N is the number of commits to retrieve"
+            echo "Change the word pick to reword (or r) next to the commit(s) whose message you want to change. Save and close the editor"
+            echo "Run git push --force-with-lease origin <your-branch-name> in your terminal"
             exit 1 # Fails the job if any commit message doesn't match
           else
             echo "All commit messages follow the required pattern."
