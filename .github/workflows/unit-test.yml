@@ -74,7 +74,7 @@ jobs:
           # We use 'jq' to parse the JSON array of commits and extract each message.
           # The -r option outputs raw strings, not JSON strings.
           # The '|| true' prevents the step from failing if jq is not found or has no output.
-          COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message' || true)
+          COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message | split("\n")[0]' || true)
 
           NON_CONFORMING_COMMITS=""
           # Read each line (commit message) and check against the pattern
