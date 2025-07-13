@@ -214,6 +214,8 @@ These conventions are enforced in CI using GitHub Actions, ensuring code hygiene
 
 It also checks for code formatting and unit tests, the same used with make format and make unit_tests commands.
 
+If the tests fail, a pull request will not be able to be merged.
+
 ## Author
 - Rodrigo Amandio
 - Data Engineer
