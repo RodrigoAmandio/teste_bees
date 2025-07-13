@@ -70,27 +70,55 @@ jobs:
           fi
         shell: bash
 
-  # Job to verify commit messages against a predefined pattern
-  check-commit-pattern:
+  heck-commit-pattern:
     runs-on: ubuntu-latest
     needs: check-branch-name # This job will only run if 'check-branch-name' succeeds
     steps:
+      - name: Checkout code # Re-introduced this step for git log to work correctly
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Essential to get full history for git log
+
       - name: Verify Commit Messages Format
         run: |
           echo "Checking commit messages for the current event..."
 
-          # It allows for messages like "feat: description", "feat: " (with a space), or "feat:" (without a space).
-          COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .*$"
+          # Determine the commit messages to check based on the event type
+          COMMIT_SUBJECTS="" # Changed to COMMIT_SUBJECTS as we'll get only subjects
+          
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For pull_request events, get commits between base and head of the PR
+            # This covers all commits introduced by the PR branch
+            PR_BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            PR_HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            
+            echo "Getting commits for Pull Request from $PR_BASE_SHA to $PR_HEAD_SHA"
+            
+            # Use git log --format=%s to get only the subject line of each commit
+            COMMIT_SUBJECTS=$(git log --format=%s "$PR_BASE_SHA".."$PR_HEAD_SHA")
+          
+            else
+            # For push events, use the push range
+            PUSH_BEFORE_SHA="${{ github.event.before }}"
+            PUSH_AFTER_SHA="${{ github.sha }}"
+            if [ "$PUSH_BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+              # Initial push to a branch
+              echo "Getting all commits for initial Push up to $PUSH_AFTER_SHA"
+              COMMIT_SUBJECTS=$(git log --format=%s "$PUSH_AFTER_SHA")
+            else
+              # Subsequent push to a branch
+              echo "Getting commits for Push from $PUSH_BEFORE_SHA to $PUSH_AFTER_SHA"
+              COMMIT_SUBJECTS=$(git log --format=%s "$PUSH_BEFORE_SHA".."$PUSH_AFTER_SHA")
+            fi
+          fi
 
-          # We use 'jq' to parse the JSON array of commits and extract ONLY THE FIRST LINE of each message.
-          # The -r option outputs raw strings, not JSON strings.
-          # The '|| true' prevents the step from failing if jq is not found or has no output.
-          COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message | split("\n")[0]' || true)
+          # It allows for messages like "feat: description", "feat: " (with a space)" (without a space).
+          COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): ?.*$"
 
           NON_CONFORMING_COMMITS=""
-          # Read each line (commit message subject) and check against the pattern
+          # Read each commit subject line and check against the pattern
           while IFS= read -r line; do
-            # Skip empty lines that might result from jq output
+            # Skip empty lines that might result from git log output
             if [[ -z "$line" ]]; then
               continue
             fi
@@ -105,7 +133,7 @@ jobs:
             if [[ ! "$line" =~ $COMMIT_PATTERN ]]; then
               NON_CONFORMING_COMMITS+="$line\n"
             fi
-          done <<< "$COMMIT_MESSAGES"
+          done <<< "$COMMIT_SUBJECTS" # Process COMMIT_SUBJECTS directly
 
           if [[ -n "$NON_CONFORMING_COMMITS" ]]; then
             echo "Error: One or more commit messages do not follow the required pattern."
