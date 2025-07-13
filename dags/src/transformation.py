@@ -153,3 +153,4 @@ if __name__ == "__main__":
     final_brewery_df = data_transformation(brewery_df, logging)
 
     save_as_parquet(final_brewery_df, silver_path, logging)
+
