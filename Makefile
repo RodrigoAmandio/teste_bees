@@ -46,17 +46,17 @@ virtual_env:
 	@echo "💡 To activate the virtual environment, run:"
 	@echo "   source .venv/bin/activate"
 
-
-# unit test and dependdencies installation (Make sure virtual env is active)
-unit_tests:
+requirements:
 	@echo "📦 Installing dependencies from requirements.txt..."
 	@.venv/bin/pip install --upgrade pip -q
 	@.venv/bin/pip install -r requirements.txt -q
 	@echo "✅ Dependencies installed"
-
+	
+# unit test (Make sure virtual env is active)
+unit_tests:
 	@echo "🧪 Running unit tests..."
 	@PYTHONPATH=./dags coverage run -m unittest discover -s tests/
-
+	
 format:
 	@echo "[INFO] Formatting all python files..."
 	@echo "[INFO] Running black..."
