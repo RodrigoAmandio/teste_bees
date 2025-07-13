@@ -18,7 +18,7 @@ from dags.src.transformation import data_transformation, json_to_dataframe
 class TestGetAPIData(unittest.TestCase):
 
     def setUp(self):
-        # Sample DataFrame
+        # It serves as mock for some of the unit tests
         self.df = pd.DataFrame([{"id": 1, "name": "Test Brewery"}])
         self.test_path = "fake_path/file.parquet"
         self.logger = MagicMock()
