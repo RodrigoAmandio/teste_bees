@@ -1,10 +1,10 @@
-# 🧪 Brewery ETL Pipeline with Airflow
+# Brewery ETL Pipeline with Airflow
 
 This repository contains a complete ELT pipeline for processing data from the Open Brewery DB API using Apache Airflow. It follows the **Medallion architecture** (Raw → Silver → Gold) and is orchestrated through Airflow running in Docker.
 
 ---
 
-## 🚀 Project Overview
+## Project Overview
 
 This ETL process performs:
 
@@ -17,13 +17,13 @@ The pipeline is containerized using Docker and all common operations are automat
 
 ---
 
-## ⚙️ Environment Setup
+## Environment Setup
 
 > Ensure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and running before continuing.
 
-### 🧰 Main Setup Commands
+### Main Setup Commands
 
-All setup commands are available in the `Makefile`. Run them from your terminal in the project root:
+All setup commands are available in the `Makefile`. Run them in the same order they appear in this document from your terminal in the project root:
 
 ```bash
 make permissions
@@ -64,7 +64,7 @@ volumes:
   - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
 ```
 
-- Changes to these directories in the container will reflect on your local machine and vice versa.
+Changes to these directories in the container will reflect on your local machine and vice versa.
 
 ## Virtual Environment (for development)
 Used to run unit tests and format Python files locally.
@@ -162,27 +162,37 @@ make down
     - **silver_path**
     - **gold_path**
 
-- **Monitoring / Logging**: All Python scripts include structured logging for observability in Airflow logs. Messages that start with "Observability" can be mapped and then integrated with a visualazation tool like Datadog or Grafana
+- **Monitoring / Logging**: All Python scripts include structured logging for observability in Airflow logs. Messages that start with "Observability" can be mapped and then integrated with visualization tools like Datadog or Grafana. These tools can directly connect to cloud logging services such as Amazon CloudWatch.
+
+```json
+{
+    "Observability": "Unexpected error when retrieving API data",
+    "Error": "Bad Request",
+    "StatusCode": 404
+}
+```
 
 - **Testing**: Modular design allows each Python function to be tested in isolation.
 
 ## Repository Patterns and Data Quality
 To maintain consistency and ensure code quality, this repository uses a CI pipeline to enforce naming conventions for commits and branches. See the desired commit patters:
 
+```text
 <type>: <description>
+```
 
-Where <type> is one of the following:
+Where ```text <type>'``` is one of the following:
 
-- feat – New feature
-- fix – Bug fix
-- docs – Documentation changes
-- chore – Maintenance tasks
-- refactor – Code refactoring that doesn't affect behavior
-- test – Adding or updating tests
-- build – Build system changes
-- ci – Continuous Integration configuration
-- perf – Performance improvements
-- revert – Revert a previous commit
+- **feat** – New feature
+- **fix** – Bug fix
+- **docs** – Documentation changes
+- **chore** – Maintenance tasks
+- **refactor** – Code refactoring that doesn't affect behavior
+- **test** – Adding or updating tests
+- **build** – Build system changes
+- **ci** – Continuous Integration configuration
+- **perf** – Performance improvements
+- **revert** – Revert a previous commit
 
 **Example**: feat: add retry logic to ETL pipeline
 
@@ -194,3 +204,9 @@ These conventions are enforced in CI using GitHub Actions, ensuring code hygiene
 ## Unit tests with CI
 
 It also checks for code formatting and unit tests, the same used with make format and make unit_tests commands.
+
+## Author
+Rodrigo Amandio
+Data Engineer
+- AWS Certified Data Engineer Associate
+- Pursuing Google Professional Data Engineer
