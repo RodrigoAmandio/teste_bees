@@ -84,10 +84,12 @@ jobs:
           COMMIT_PATTERN="^(feat|fix|docs|chore|refactor|test|build|ci|perf|revert): .+"
 
           # Use grep to find any commit messages that DO NOT match the pattern.
+          # -v '^$': removes empty lines
           # -q: quiet, suppresses output
           # -E: extended regex
           # -v: invert match (select non-matching lines)
-          if echo "$COMMIT_MESSAGES" | grep -qEv "$COMMIT_PATTERN"; then
+
+          if echo "$COMMIT_MESSAGES" | grep -v '^$' | grep -qEv "$COMMIT_PATTERN"; then
             echo "Error: One or more commit messages do not follow the required pattern."
             echo "Please ensure all commit messages adhere to a standard format (e.g., Conventional Commits)."
             echo "Example allowed patterns:"
