@@ -46,11 +46,11 @@ make up
 
 
 ## Airflow Access
-**URL**: http://localhost:8080
+- **URL**: http://localhost:8080
 
-**Username**: airflow
+- **Username**: airflow
 
-**Password**: airflow
+- **Password**: airflow
 
 ## Volumes & Persistence
 These folders on your host are mapped to the Airflow container:
@@ -150,6 +150,8 @@ make down
 
 ```
 
+**Note**: Folders like config/, logs/, and data/ are intentionally ignored in version control via .gitignore. These directories can grow very large with runtime artifacts or sensitive configurations and should not be uploaded to the remote repository. This keeps the repository clean and efficient.
+
 ## Additional Notes
 - **Timezone**: DAG schedules use UTC. Daily runs are configured at 23:00 UTC (8:00 PM Brazil time).
 
@@ -181,7 +183,7 @@ To maintain consistency and ensure code quality, this repository uses a CI pipel
 <type>: <description>
 ```
 
-Where ```text <type>'``` is one of the following:
+Where ```text <type>``` is one of the following:
 
 - **feat** – New feature
 - **fix** – Bug fix
@@ -206,7 +208,7 @@ These conventions are enforced in CI using GitHub Actions, ensuring code hygiene
 It also checks for code formatting and unit tests, the same used with make format and make unit_tests commands.
 
 ## Author
-Rodrigo Amandio
-Data Engineer
+- Rodrigo Amandio
+- Data Engineer
 - AWS Certified Data Engineer Associate
 - Pursuing Google Professional Data Engineer
