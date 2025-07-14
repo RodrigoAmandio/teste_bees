@@ -8,10 +8,10 @@ This repository contains a complete ELT pipeline for processing data from the Op
 
 This ETL process performs:
 
-1. **Extraction** of brewery data from a public API
-2. **Transformation** into a clean silver dataset
-3. **Aggregation** of metrics by location for gold-level analysis
-4. **Persistence** of all data in JSON and Parquet formats under a local `/data` folder, mounted to the Airflow container
+1. **Extraction** of brewery data from a public API;
+2. **Transformation** into a clean silver dataset;
+3. **Aggregation** of metrics by location for gold-level analysis;
+4. **Persistence** of all data in JSON and Parquet formats under a local `/data` folder, mounted to the Airflow container.
 
 The pipeline is containerized using Docker and all common operations are automated via a `Makefile`.
 
@@ -29,30 +29,37 @@ All setup commands are available in the `Makefile`. Run them in the same order t
 make permissions
 ```
 
-- Creates the necessary folders: dags/, logs/, plugins/, config/, and data/
+- Creates the necessary folders: dags/, logs/, plugins/, config/, and data/;
 
-- Sets permissions if needed
+- Sets permissions if needed.
 
 
 ```bash
 make up
 ```
 
-- Downloads and runs the official Apache Airflow docker-compose.yaml
+- Downloads and runs the official Apache Airflow docker-compose.yaml;
 
-- Ensures the data/ volume is mounted via sed
+- Ensures the data/ volume is mounted via sed;
 
-- Starts all required services (scheduler, webserver, etc.)
+- Starts all required services (scheduler, webserver, etc.).
 
 
 ## Airflow Access
+
+Once ```make up``` command is finished, follow the following steps to sign up:
+
 - **URL**: http://localhost:8080
 
 - **Username**: airflow
 
 - **Password**: airflow
 
-## Volumes & Persistence
+**Note**: The Airflow infrastructure uses eight containers (scheduler, webserver, triggerer, etc.). You can proceed once seven of them are running. One container may exit by design (like airflow-init).
+
+You can verify this by checking the ![Docker desktop interface](images/docker_desktop_interface.png)
+
+## Additional Information: Volumes & Persistence
 These folders on your host are mapped to the Airflow container:
 
 ```yaml
@@ -75,30 +82,30 @@ source .venv/bin/activate
 make requirements
 ```
 
-- **make virtual_env**: Creates a virtual environment in .venv/
+- **make virtual_env**: Creates a virtual environment in .venv/;
 
-- **source .venv/bin/activate**: Activates the environment
+- **source .venv/bin/activate**: Activates the environment;
 
-- **make requirements**: Installs project dependencies from requirements.txt
+- **make requirements**: Installs project dependencies from requirements.txt.
 
 
 ## Code Quality & Formatting
-Before pushing code, ensure it follows consistent formatting:
+Before pushing code to Github, ensure it follows consistent formatting:
 
 ```bash
 make format
 ```
 Runs:
 
-- **black**: Auto-formatter
+- **black**: Auto-formatter;
 
-- **isort**: Organizes import statements
+- **isort**: Organizes import statements.
 
 ```bash
 make unit_tests
 ```
 
-Runs unit tests in tests/test_functions.py
+Runs unit tests in tests/test_functions.py.
 
 ```bash
 make check
@@ -114,6 +121,8 @@ To check your tests with coverage:
 coverage run -m unittest discover tests/
 coverage report -m
 ```
+
+Those commands are useful if you want to validate your unit tests locally and then see the coverage percentage for each file.
 
 ## Shutting Down
 To stop the Airflow containers when you're done:
@@ -150,7 +159,7 @@ make down
 
 ```
 
-**Note**: Folders like config/, logs/, and data/ are intentionally ignored in version control via .gitignore. These directories can grow very large with runtime artifacts or sensitive configurations and should not be uploaded to the remote repository. This keeps the repository clean and efficient.
+**Note**: Folders like **config/**, **logs/**, and **data/** are intentionally ignored in version control via ```.gitignore``` file. These directories can grow very large with runtime artifacts or sensitive configurations and should not be uploaded to the remote repository. This keeps the repository clean and efficient.
 
 ## Additional Notes
 - **Timezone**: DAG schedules use UTC. Daily runs are configured at 23:00 UTC (8:00 PM Brazil time).
@@ -192,7 +201,7 @@ To maintain consistency and ensure code quality, this repository uses a CI pipel
 <type>: <description>
 ```
 
-Where ```text <type>``` is one of the following:
+Where ```<type>``` is one of the following:
 
 - **feat** – New feature
 - **fix** – Bug fix
@@ -214,7 +223,7 @@ These conventions are enforced in CI using GitHub Actions, ensuring code hygiene
 
 ## Unit tests with CI
 
-It also checks for code formatting and unit tests, the same used with make format and make unit_tests commands.
+It also checks for code formatting and unit tests, the same used with ```make format``` and ```make unit_tests``` commands.
 
 If the tests fail, a pull request will not be able to be merged.
 
