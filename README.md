@@ -47,7 +47,7 @@ make up
 
 ## Airflow Access
 
-Once ```make up``` command is finished, follow the following steps to sign up:
+Once ```make up``` command is finished, follow these steps to access the Airflow UI:
 
 - **URL**: http://localhost:8080
 
@@ -57,7 +57,9 @@ Once ```make up``` command is finished, follow the following steps to sign up:
 
 **Note**: The Airflow infrastructure uses eight containers (scheduler, webserver, triggerer, etc.). You can proceed once seven of them are running. One container may exit by design (like airflow-init).
 
-You can verify this by checking the ![Docker desktop interface](images/docker_desktop_interface.png)
+You can verify this by checking the Docker desktop interface 
+
+![Docker desktop interface](images/docker_desktop_interface.png)
 
 ## Additional Information: Volumes & Persistence
 These folders on your host are mapped to the Airflow container:
