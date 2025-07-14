@@ -61,6 +61,22 @@ You can verify this by checking the Docker desktop interface
 
 ![Docker desktop interface](images/docker_desktop_interface.png)
 
+## Running the Brewery DAG
+
+After signing into the Airflow UI:
+
+- Click on the DAGs tab in the top navigation bar;
+
+- Find the DAG named: ```brewery_etl_with_params```;
+
+- From here, you can:
+
+  - View the DAG’s structure by clicking the Graph View;
+
+  - Inspect logs and task statuses using the Tree View;
+
+  - Manually trigger a DAG.
+
 ## Additional Information: Volumes & Persistence
 These folders on your host are mapped to the Airflow container:
 
@@ -75,8 +91,8 @@ volumes:
 
 Changes to these directories in the container will reflect on your local machine and vice versa.
 
-## Virtual Environment (for development)
-Used to run unit tests and format Python files locally.
+## Virtual Environment (only once)
+You only need to run the following commands once, during the initial environment setup:
 
 ```bash
 make virtual_env
@@ -90,6 +106,11 @@ make requirements
 
 - **make requirements**: Installs project dependencies from requirements.txt.
 
+After the first time, simply activate the environment whenever you start working on the project:
+
+```bash
+source .venv/bin/activate
+```
 
 ## Code Quality & Formatting
 Before pushing code to Github, ensure it follows consistent formatting:
@@ -120,11 +141,10 @@ Used in CI to validate formatting and test execution.
 To check your tests with coverage:
 
 ```bash
-coverage run -m unittest discover tests/
 coverage report -m
 ```
 
-Those commands are useful if you want to validate your unit tests locally and then see the coverage percentage for each file.
+This command is useful if you want to see the coverage percentage for each file.
 
 ## Shutting Down
 To stop the Airflow containers when you're done:
