@@ -35,6 +35,7 @@ permissions:
 	@mkdir -p dags/src dags/utils logs plugins config data
 	@echo "Setting permissions to folders"
 	@sudo chown -R $$(id -u):$$(id -g) dags logs plugins config #It gives permissions to the folders
+	@echo "Permissions succesfully added!"
 
 # Creates virtual env
 virtual_env:
